@@ -30,7 +30,11 @@ class Shina_Import_Deactivator {
 	 * @since    1.0.0
 	 */
 	public static function deactivate() {
+        global $wpdb;
 
+        $wpdb -> query("DROP TABLE " . SHINA_IMPORT_TABLE_PROCESSES);
+
+        wp_clear_scheduled_hook( 'shina_import_cron_event' );
 	}
 
 }

@@ -35,7 +35,11 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
+define( 'SHINA_IMPORT_PLUGIN_NAME', 'shina-import' );
 define( 'SHINA_IMPORT_VERSION', '1.0.0' );
+define( 'SHINA_IMPORT_FILE_NAME', 'sh-st_next.csv' );
+define( 'SHINA_IMPORT_TABLE_PROCESSES', 'sh_processes' );
+define( 'SHINA_IMPORT_TABLE_IMPORT', 'sh_import' );
 
 /**
  * The code that runs during plugin activation.

@@ -29,3 +29,7 @@
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
+
+global $wpdb;
+
+$wpdb -> query("DROP TABLE " . SHINA_IMPORT_TABLE_PROCESSES);

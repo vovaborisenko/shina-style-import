@@ -72,7 +72,7 @@ class Shina_Import {
 		} else {
 			$this->version = '1.0.0';
 		}
-		$this->plugin_name = 'shina-import';
+		$this->plugin_name = SHINA_IMPORT_PLUGIN_NAME;
 
 		$this->load_dependencies();
 		$this->set_locale();
@@ -104,6 +104,11 @@ class Shina_Import {
 		 * core plugin.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-shina-import-loader.php';
+
+        /**
+         * CRON
+         */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-shina-import-cron.php';
 
 		/**
 		 * The class responsible for defining internationalization functionality
@@ -153,10 +158,15 @@ class Shina_Import {
 	private function define_admin_hooks() {
 
 		$plugin_admin = new Shina_Import_Admin( $this->get_plugin_name(), $this->get_version() );
+        $plugin_cron = new Shina_Import_Cron();
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
-
+		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_menu' );
+		$this->loader->add_action( 'shina_import_cron_event', $plugin_cron, 'check_file' );
+		$this->loader->add_action( 'shina_import_cron_event', $plugin_cron, 'import' );
+        $this->loader->add_filter( 'cron_schedules', $plugin_admin, 'add_wp_cron_schedules' );
+        $this->loader->add_filter( 'heartbeat_send', $plugin_admin, 'heartbeat_send' );
 	}
 
 	/**

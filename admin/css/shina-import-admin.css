@@ -2,3 +2,6 @@
  * All of the CSS for your admin-specific functionality should be
  * included in this file.
  */
+#import_progress_bar_title {
+  height: 2px;
+}
