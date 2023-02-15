@@ -9,13 +9,13 @@
 			return;
 		}
 
-		var shina_import = data['shina-import'];
+		Object.entries(data['shina-import']).forEach(([id, value]) => {
+			$(`#import_process_data_${id}`).text( value.percent);
+			$(`#import_progress_bar_${id}, #import_progress_bar_title_${id}`).attr('style', value.progress_bar_style);
+			$(`#import_process_${id}`).attr('style', value.progress_style);
 
-		$('#import_process_data').text( shina_import.percent);
-		$('#import_progress_bar, #import_progress_bar_title').attr('style', shina_import.progress_bar_style);
-		$('#import_process').attr('style', shina_import.progress_style);
-
-		$('#import_message').html(shina_import.message);
+			$(`#import_message_${id}`).html(value.message);
+		})
 	});
 
 })( jQuery );

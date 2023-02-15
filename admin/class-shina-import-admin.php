@@ -80,50 +80,51 @@ class Shina_Import_Admin {
         global $wpdb;
 
         $processes = $wpdb->get_results( 'SELECT * FROM ' . SHINA_IMPORT_TABLE_PROCESSES, ARRAY_A );
+        $file_names = [
+            'short_import'  => SHINA_IMPORT_FILE_NAME,
+            'short_feed'    => SHINA_IMPORT_FEED_FILE_NAME
+        ];
 
         if (!empty($processes)) {
-            $process_import = $processes[0];
-            $process_import_width = round(( $process_import['row_processed'] / ($process_import['row_count'] ?: 1)) * 100 );
-            $process_import_status = $process_import['status'];
+            foreach ($processes as $process) {
+                $process_width = round(( $process['row_processed'] / ($process['row_count'] ?: 1)) * 100 );
+                $process_name = $process['process_name'];
+                $process_status = $process['status'];
+                $message_status = $process_status === 'error' ? 'warning' : 'success';
 
-            $messages = [
-                'new_file' => '<div class="alert alert-success">Файл обновлен, обновление товаров начнется в течение минуты.</div>',
-                'started'  => '<div class="alert alert-success">Обновление товаров выполняется.</div>',
-                'importing'=> '<div class="alert alert-success">Обновление товаров выполняется.</div>',
-                'imported' => '<div class="alert alert-success">Обновление товаров выполнено.</div>',
-                'finished' => '<div class="alert alert-success">Обновление товаров успешно выполнено. Если недавно был изменен файл ' . SHINA_IMPORT_FILE_NAME . ', импорт начнется автоматически в течение минуты.</div>',
-                'error'    => '<div class="alert alert-warning">' . $process_import['msg'] . '</div>',
-            ];
+                $progress_style = [
+                    'new_file'  => 'display: none;',
+                    'started'   => 'display: block;',
+                    'importing' => 'display: block;',
+                    'exporting' => 'display: block;',
+                    'imported'  => 'display: none;',
+                    'exported'  => 'display: none;',
+                    'finished'  => 'display: none;',
+                    'error'     => 'display: none;',
+                ];
 
-            $progress_style = [
-                'new_file'  => 'display: none;',
-                'started'   => 'display: block;',
-                'importing' => 'display: block;',
-                'exporting' => 'display: block;',
-                'imported'  => 'display: none;',
-                'exported'  => 'display: none;',
-                'finished'  => 'display: none;',
-                'error'     => 'display: none;',
-            ];
+                $progress_bar_style = [
+                    'new_file'  => 'display: none;',
+                    'started'   => 'width: ' . $process_width . '%',
+                    'importing' => 'width: ' . $process_width . '%',
+                    'imported'  => 'display: none;',
+                    'exported'  => 'display: none;',
+                    'finished'  => 'display: none;',
+                    'error'     => 'display: none;',
+                ];
 
-            $progress_bar_style = [
-                'new_file'  => 'display: none;',
-                'started'   => 'width: ' . $process_import_width . '%',
-                'importing' => 'width: ' . $process_import_width . '%',
-                'imported'  => 'display: none;',
-                'exported'  => 'display: none;',
-                'finished'  => 'display: none;',
-                'error'     => 'display: none;',
-            ];
-
-            $response[$this->plugin_name] = [
-                'status'                => $process_import_status,
-                'message'               => $messages[$process_import_status],
-                'progress_style'        => $progress_style[$process_import_status],
-                'progress_bar_style'    => $progress_bar_style[$process_import_status],
-                'percent'               => $process_import_width . '%',
-                'file_mod_time'         => date( 'F d Y H:i:s', $process_import['file_mod_time'] + 3 * 3600 )
-            ];
+                $response[$this->plugin_name][$process_name] = [
+                    'id'                    => $process_name,
+                    'file_name'             => $file_names[$process_name],
+                    'process'               => $process,
+                    'status'                => $process_status,
+                    'message'               => $process['msg'] ? '<div class="alert alert-' . $message_status . '">' . $process['msg'] . '</div>' : '',
+                    'progress_style'        => $progress_style[$process_status],
+                    'progress_bar_style'    => $progress_bar_style[$process_status],
+                    'percent'               => $process_width . '%',
+                    'file_mod_time'         => date( 'F d Y H:i:s', $process['file_mod_time'] + 3 * 3600 )
+                ];
+            }
         }
 
         return $response;

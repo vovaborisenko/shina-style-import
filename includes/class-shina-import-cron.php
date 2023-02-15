@@ -2,6 +2,13 @@
 class Shina_Import_Cron {
 	private string $file_name;
 	private string $dir;
+    private array $messages = [
+        'new_file' => 'Файл обновлен, обновление товаров начнется в течение минуты.',
+        'started'  => 'Обновление товаров выполняется.',
+        'importing'=> 'Обновление товаров выполняется.',
+        'imported' => 'Обновление товаров выполнено.',
+        'finished' => 'Обновление товаров успешно выполнено. Если недавно был изменен файл ' . SHINA_IMPORT_FILE_NAME . ', импорт начнется автоматически в течение минуты.'
+    ];
 
 	private string $table_name = 'sh_import';
 
@@ -58,7 +65,8 @@ class Shina_Import_Cron {
 					'status' 		=> 'new_file',
 					'row_processed' => 1,
 					'row_count' 	=> $row_count,
-					'process_name' => 'short_import'
+					'process_name'  => 'short_import',
+                    'msg'           => $this->messages['new_file']
 				]
 			);
 		}
@@ -90,7 +98,10 @@ class Shina_Import_Cron {
 			// изменяет статус шортимпорта, создает пути к логам
 			$wpdb->update(
 				SHINA_IMPORT_TABLE_PROCESSES,
-				['status' => 'started'],
+				[
+                    'status'    => 'started',
+                    'msg'       => $this->messages['started']
+                ],
 				['ID' => 1, 'process_name' => 'short_import']
 			);
 		}
@@ -99,7 +110,10 @@ class Shina_Import_Cron {
 			// изменяет статус шортимпорта
 			$wpdb->update(
 				SHINA_IMPORT_TABLE_PROCESSES,
-				['status' => 'importing'],
+				[
+                    'status'    => 'importing',
+                    'msg'       => $this->messages['importing']
+                ],
 				['ID' => 1, 'process_name' => 'short_import']
 			);
 
@@ -162,7 +176,10 @@ class Shina_Import_Cron {
 			// изменяет статус шортимпорта
 			$wpdb->update(
 				SHINA_IMPORT_TABLE_PROCESSES,
-				['status' => $row_count > $row_current ? 'started' : 'imported'],
+				[
+                    'status'    => $row_count > $row_current ? 'started' : 'imported',
+                    'msg'       =>  $row_count > $row_current ? $this->messages['started'] : $this->messages['imported']
+                ],
 				['ID' => 1, 'process_name' => 'short_import']
 			);
 		}
@@ -171,7 +188,10 @@ class Shina_Import_Cron {
 			// изменяет статус шортимпорта
 			$wpdb->update(
 				SHINA_IMPORT_TABLE_PROCESSES,
-				['status' => 'finished'],
+				[
+                    'status'    => 'finished',
+                    'msg'       => $this->messages['finished']
+                ],
 				['ID' => 1, 'process_name' => 'short_import']
 			);
 		}
