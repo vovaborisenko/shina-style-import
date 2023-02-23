@@ -153,25 +153,29 @@ class Shina_Import_Cron_Feed {
 				$linedata = str_getcsv($lines[$row_current], ','); // linedata
 				$product_sku = $linedata[4];
 				$product_id = $this->get_product_id_by_sku($product_sku);
-                $product_link = get_permalink($product_id);
-				$product_price = get_post_meta($product_id, '_price', true);
-				$product_img = get_the_post_thumbnail_url($product_id, 'full');
-				$product_title = get_the_title($product_id);
-				$product_category = $linedata[3] === 'Автомобильные шины' ? 1 : 2206;
+                $product_status = get_post_status($product_id);
 
-				$wpdb->insert(
-					$this->table_name,
-					[
-						'product_id' => $product_id,
-						'product_sku' => $product_sku,
-						'product_price' => $product_price,
-						'product_link' => $product_link,
-						'product_img' => $product_img,
-						'product_title' => $product_title,
-                        'product_category' => $product_category
-					],
-					['%d', '%s', '%f', '%s', '%s', '%s', '%d']
-				);
+                if ($product_status === 'publish') {
+                    $product_link = get_permalink($product_id);
+                    $product_price = get_post_meta($product_id, '_price', true);
+                    $product_img = get_the_post_thumbnail_url($product_id, 'full');
+                    $product_title = get_the_title($product_id);
+                    $product_category = $linedata[3] === 'Автомобильные шины' ? 1 : 2206;
+
+                    $wpdb->insert(
+                        $this->table_name,
+                        [
+                            'product_id' => $product_id,
+                            'product_sku' => $product_sku,
+                            'product_price' => $product_price,
+                            'product_link' => $product_link,
+                            'product_img' => $product_img,
+                            'product_title' => $product_title,
+                            'product_category' => $product_category
+                        ],
+                        ['%d', '%s', '%f', '%s', '%s', '%s', '%d']
+                    );
+                }
 
 				$wpdb->update(
 					SHINA_IMPORT_TABLE_PROCESSES,
@@ -203,7 +207,7 @@ class Shina_Import_Cron_Feed {
             if ( !empty( $result ) ) {
                 try {
                     $result_feeds = $this->write_feeds( $result );
-                } catch (Exception) {
+                } catch (Exception $err) {
                     $wpdb->update(
                         SHINA_IMPORT_TABLE_PROCESSES,
                         [

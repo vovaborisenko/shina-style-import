@@ -9,14 +9,14 @@
  * that starts the plugin.
  *
  * @link              https://github.com/vovaborisenko
- * @since             1.0.0
+ * @since             1.1.1
  * @package           Shina_Import
  *
  * @wordpress-plugin
  * Plugin Name:       Shina Style Import
  * Plugin URI:        https://github.com/vovaborisenko/shina-style-import
  * Description:       Обновление цен и наличия на сайте путем записи нужных значений прямо в базу WP
- * Version:           1.1.0
+ * Version:           1.1.1
  * Author:            Uladzimir Barysenka
  * Author URI:        https://github.com/vovaborisenko
  * License:           GPL-2.0+
@@ -36,7 +36,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Rename this for your plugin and update it as you release new versions.
  */
 define( 'SHINA_IMPORT_PLUGIN_NAME', 'shina-import' );
-define( 'SHINA_IMPORT_VERSION', '1.1.0' );
+define( 'SHINA_IMPORT_VERSION', '1.1.1' );
 define( 'SHINA_IMPORT_FILE_NAME', 'sh-st_next.csv' );
 define( 'SHINA_IMPORT_FEED_FILE_NAME', 'sh-st_next-yml-0.csv' );
 define( 'SHINA_IMPORT_TABLE_PROCESSES', 'sh_processes' );
