@@ -197,6 +197,9 @@ class Shina_Import_Cron {
 		}
 
 		if ($process_status == 'imported') {
+			if ( ! wc_update_product_lookup_tables_is_running() ) {
+				wc_update_product_lookup_tables();
+			}
 			// изменяет статус шортимпорта
 			$wpdb->update(
 				SHINA_IMPORT_TABLE_PROCESSES,
