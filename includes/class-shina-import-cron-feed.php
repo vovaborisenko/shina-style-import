@@ -78,6 +78,12 @@ class Shina_Import_Cron_Feed {
 	public function import() {
 		global $wpdb;
 
+        set_time_limit(0);
+
+        $finish = ini_get( 'max_execution_time' ) > 0
+            ? microtime(true) + ini_get( 'max_execution_time' ) * 1000
+            : 0;
+
         $dependence_record = $this->get_table_record(1);
 
         if ($dependence_record['status'] !== 'finished') {
@@ -123,6 +129,7 @@ class Shina_Import_Cron_Feed {
                 ],
 				['ID' => $this->ID, 'process_name' => $this->process_name]
 			);
+            $process_status = 'started';
 		}
 
 		if ($process_status == 'started') {
@@ -138,7 +145,7 @@ class Shina_Import_Cron_Feed {
 
 			$row_start = $record['row_processed'];
 			$row_count = $record['row_count'];
-			$row_finish = $row_start + 4000 > $row_count ? $row_count : $row_start + 4000;
+            $row_current = $row_start;
 
 			$cont = trim(file_get_contents($this->file_name));
 
@@ -149,7 +156,10 @@ class Shina_Import_Cron_Feed {
 			$lines = array_filter($lines);
 			$lines = array_map('trim', $lines);
 
-			for ($row_current = $row_start; $row_current <= $row_finish; $row_current++) {
+            while (
+                $row_current <= $row_count
+                && ( !$finish || $finish > microtime(true) + 2000 )
+            ) {
 				$linedata = str_getcsv($lines[$row_current], ','); // linedata
 				$product_sku = $linedata[4];
 				$product_id = $this->get_product_id_by_sku($product_sku);
@@ -182,6 +192,7 @@ class Shina_Import_Cron_Feed {
 					['row_processed' => $row_current],
                     ['ID' => $this->ID, 'process_name' => $this->process_name]
 				);
+                $row_current++;
 			}
 
 			// изменяет статус шортимпорта
@@ -193,6 +204,7 @@ class Shina_Import_Cron_Feed {
                 ],
                 ['ID' => $this->ID, 'process_name' => $this->process_name]
 			);
+            $process_status = $row_count > $row_current ? 'started' : 'imported';
 		}
 
 		if ($process_status == 'imported') {
