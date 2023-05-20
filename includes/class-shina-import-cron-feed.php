@@ -309,8 +309,10 @@ class Shina_Import_Cron_Feed {
             $offer->addChild('picture', $item['product_img']);
         }
 
-        $dealby_written = $sxe->asXML($this->dir . '/feed-dealby.xml');
-        $yandex_written = $sxe->asXML($this->dir . '/feed-yandexm.xml');
+        $dealby_written = $sxe->asXML($this->dir . '/feed-dealby-new.xml');
+        $yandex_written = $sxe->asXML($this->dir . '/feed-yandexm-new.xml');
+        rename($this->dir . '/feed-dealby-new.xml', $this->dir . '/feed-dealby.xml');
+        rename($this->dir . '/feed-yandexm-new.xml', $this->dir . '/feed-yandexm.xml');
 
         return $dealby_written && $yandex_written;
     }
