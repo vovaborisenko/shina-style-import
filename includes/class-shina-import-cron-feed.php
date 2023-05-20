@@ -86,7 +86,11 @@ class Shina_Import_Cron_Feed {
 
         $dependence_record = $this->get_table_record(1);
 
-        if ($dependence_record['status'] !== 'finished') {
+        if (
+            isset( $dependence_record['status'] )
+            && $dependence_record['status'] !== 'finished'
+            && $dependence_record['status'] !== 'error'
+        ) {
             $wpdb->update(
                 SHINA_IMPORT_TABLE_PROCESSES,
                 [
