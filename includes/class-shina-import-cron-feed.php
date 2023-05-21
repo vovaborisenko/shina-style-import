@@ -1,7 +1,7 @@
 <?php
 class Shina_Import_Cron_Feed {
-	private string $file_name;
-	private string $dir;
+    private string $file_name;
+    private string $dir;
     private array $messages = [
         'new_file' => 'Файл обновлен, обновление feed\'ов начнется в течение минуты.',
         'started'  => 'Обновление feed\'ов выполняется.',
@@ -10,73 +10,73 @@ class Shina_Import_Cron_Feed {
         'finished' => 'Обновление feed\'ов успешно выполнено. Если недавно был изменен файл ' . SHINA_IMPORT_FEED_FILE_NAME . ', процесс начнется автоматически в течение минуты.'
     ];
 
-	private string $table_name = 'sh_feed';
-	private string $process_name = 'short_feed';
+    private string $table_name = 'sh_feed';
+    private string $process_name = 'short_feed';
     private int $ID = 2;
 
-	public function __construct() {
-		$dir = wp_upload_dir()['basedir'] . '/' . SHINA_IMPORT_PLUGIN_NAME;
+    public function __construct() {
+        $dir = wp_upload_dir()['basedir'] . '/' . SHINA_IMPORT_PLUGIN_NAME;
 
-		$this->dir = $dir;
-		$this->file_name = $dir . '/' . SHINA_IMPORT_FEED_FILE_NAME;
-	}
+        $this->dir = $dir;
+        $this->file_name = $dir . '/' . SHINA_IMPORT_FEED_FILE_NAME;
+    }
 
-	public function check_file () {
-		global $wpdb;
+    public function check_file () {
+        global $wpdb;
 
-		$record = $this->get_table_record($this->ID);
+        $record = $this->get_table_record($this->ID);
 
-		$file_mod_time = $record['file_mod_time'];
+        $file_mod_time = $record['file_mod_time'];
 
-		if ( ! file_exists($this->file_name) ) {
-			// изменяет инфо о шортfeed
-			$wpdb->replace( SHINA_IMPORT_TABLE_PROCESSES,
-				[
-					'ID' => $this->ID,
-					'status' => 'error',
-					'process_name' => $this->process_name,
-					'msg' => 'Файл ' . SHINA_IMPORT_FEED_FILE_NAME . ' отсутствует в папке ' . $this->dir,
-				]
-			);
+        if ( ! file_exists($this->file_name) ) {
+            // изменяет инфо о шортfeed
+            $wpdb->replace( SHINA_IMPORT_TABLE_PROCESSES,
+                [
+                    'ID' => $this->ID,
+                    'status' => 'error',
+                    'process_name' => $this->process_name,
+                    'msg' => 'Файл ' . SHINA_IMPORT_FEED_FILE_NAME . ' отсутствует в папке ' . $this->dir,
+                ]
+            );
 
-			return $record;
-		}
+            return $record;
+        }
 
-		$new_file_mod_time = filemtime($this->file_name);
+        $new_file_mod_time = filemtime($this->file_name);
 
-		// если файл изменился
-		if ( $file_mod_time != $new_file_mod_time ) {
-			// считает кол-во строк в файле
-			$handle = fopen( $this->file_name, "r" );
+        // если файл изменился
+        if ( $file_mod_time != $new_file_mod_time ) {
+            // считает кол-во строк в файле
+            $handle = fopen( $this->file_name, "r" );
 
-			$row_count = 0;
+            $row_count = 0;
 
-			while ( !feof($handle) ) {
-				$bufer = fread( $handle, 1048576 );
-				$row_count += substr_count( $bufer, "\n" );
-			}
+            while ( !feof($handle) ) {
+                $bufer = fread( $handle, 1048576 );
+                $row_count += substr_count( $bufer, "\n" );
+            }
 
-			fclose($handle);
+            fclose($handle);
 
-			// изменяет инфо о шортимпорте
-			$wpdb->replace( SHINA_IMPORT_TABLE_PROCESSES,
-				[
-					'ID'            => $this->ID,
-					'file_mod_time' => $new_file_mod_time,
-					'status' 		=> 'new_file',
-					'row_processed' => 1,
-					'row_count' 	=> $row_count,
-					'process_name'  => $this->process_name,
+            // изменяет инфо о шортимпорте
+            $wpdb->replace( SHINA_IMPORT_TABLE_PROCESSES,
+                [
+                    'ID'            => $this->ID,
+                    'file_mod_time' => $new_file_mod_time,
+                    'status' 		=> 'new_file',
+                    'row_processed' => 1,
+                    'row_count' 	=> $row_count,
+                    'process_name'  => $this->process_name,
                     'msg'           => $this->messages['new_file']
-				]
-			);
-		}
+                ]
+            );
+        }
 
-		return $record;
-	}
+        return $record;
+    }
 
-	public function import() {
-		global $wpdb;
+    public function import() {
+        global $wpdb;
 
         set_time_limit(0);
 
@@ -103,70 +103,67 @@ class Shina_Import_Cron_Feed {
             return $dependence_record;
         }
 
-		$record = $this->get_table_record($this->ID);
-		$process_status = $record['status'];
+        $record = $this->get_table_record($this->ID);
+        $process_status = $record['status'];
 
-		if ($process_status == 'new_file') {
-			$wpdb->query("DROP TABLE $this->table_name");
+        if ($process_status == 'new_file') {
+            $wpdb->query("DROP TABLE $this->table_name");
 
-			$wpdb->query(
-				"CREATE TABLE $this->table_name (
-					`id` INT(11) NOT NULL AUTO_INCREMENT,
-					`product_id` BIGINT(20) NOT NULL,
-					`product_sku` VARCHAR(50) NOT NULL,
-					`product_price` DECIMAL(10,2) NOT NULL,
-					`product_link` VARCHAR(150) NOT NULL,
-					`product_img` VARCHAR(150) NOT NULL,
-					`product_title` VARCHAR(150) NOT NULL,
-					`product_category` INT(10) NOT NULL,
-					PRIMARY KEY (`id`)
-				)
-				COLLATE 'utf8_general_ci' ENGINE=MyISAM ROW_FORMAT=Dynamic AUTO_INCREMENT=1;"
-			);
+            $wpdb->query(
+                "CREATE TABLE $this->table_name (
+                    `id` INT(11) NOT NULL AUTO_INCREMENT,
+                    `product_id` BIGINT(20) NOT NULL,
+                    `product_sku` VARCHAR(50) NOT NULL,
+                    `product_price` DECIMAL(10,2) NOT NULL,
+                    `product_link` VARCHAR(150) NOT NULL,
+                    `product_img` VARCHAR(150) NOT NULL,
+                    `product_title` VARCHAR(150) NOT NULL,
+                    `product_category` INT(10) NOT NULL,
+                    PRIMARY KEY (`id`)
+                )
+                COLLATE 'utf8_general_ci' ENGINE=MyISAM ROW_FORMAT=Dynamic AUTO_INCREMENT=1;"
+            );
 
-			// изменяет статус шортимпорта, создает пути к логам
-			$wpdb->update(
-				SHINA_IMPORT_TABLE_PROCESSES,
-				[
+            // изменяет статус шортимпорта, создает пути к логам
+            $wpdb->update(
+                SHINA_IMPORT_TABLE_PROCESSES,
+                [
                     'status'        => 'started',
                     'msg'           => $this->messages['started']
                 ],
-				['ID' => $this->ID, 'process_name' => $this->process_name]
-			);
+                ['ID' => $this->ID, 'process_name' => $this->process_name]
+            );
             $process_status = 'started';
-		}
+        }
 
-		if ($process_status == 'started') {
-			// изменяет статус шортимпорта
-			$wpdb->update(
-				SHINA_IMPORT_TABLE_PROCESSES,
-				[
+        if ($process_status == 'started') {
+            // изменяет статус шортимпорта
+            $wpdb->update(
+                SHINA_IMPORT_TABLE_PROCESSES,
+                [
                     'status'    => 'importing',
                     'msg'       => $this->messages['importing']
                 ],
                 ['ID' => $this->ID, 'process_name' => $this->process_name]
-			);
+            );
 
-			$row_start = $record['row_processed'];
-			$row_count = $record['row_count'];
-            $row_current = $row_start;
+            $row_start = $record['row_processed'];
+            $row_count = $record['row_count'];
+            $row_finish = $row_start + 4000 > $row_count ? $row_count : $row_start + 4000;
 
-			$cont = trim(file_get_contents($this->file_name));
+            $cont = trim(file_get_contents($this->file_name));
 
-			// определим разделитель
-			$row_delimiter = !str_contains($cont, "\r\n") ? "\n" : "\r\n";
+            // определим разделитель
+            $row_delimiter = !str_contains($cont, "\r\n") ? "\n" : "\r\n";
 
-			$lines = explode($row_delimiter, trim($cont));
-			$lines = array_filter($lines);
-			$lines = array_map('trim', $lines);
+            $lines = explode($row_delimiter, trim($cont));
+            $lines = array_filter($lines);
+            $lines = array_map('trim', $lines);
 
-            while (
-                $row_current <= $row_count
-                && ( !$finish || $finish > microtime(true) + 2000 )
-            ) {
-				$linedata = str_getcsv($lines[$row_current], ','); // linedata
-				$product_sku = $linedata[4];
-				$product_id = $this->get_product_id_by_sku($product_sku);
+            for ($row_current = $row_start; $row_current <= $row_finish; $row_current++) {
+                $linedata = str_getcsv($lines[$row_current], ','); // linedata
+                $product_sku = $linedata[4];
+                $product_id = $this->get_product_id_by_sku($product_sku);
                 $product_status = get_post_status($product_id);
 
                 if ($product_status === 'publish') {
@@ -191,28 +188,27 @@ class Shina_Import_Cron_Feed {
                     );
                 }
 
-				$wpdb->update(
-					SHINA_IMPORT_TABLE_PROCESSES,
-					['row_processed' => $row_current],
+                $wpdb->update(
+                    SHINA_IMPORT_TABLE_PROCESSES,
+                    ['row_processed' => $row_current],
                     ['ID' => $this->ID, 'process_name' => $this->process_name]
-				);
-                $row_current++;
-			}
+                );
+            }
 
-			// изменяет статус шортимпорта
-			$wpdb->update(
-				SHINA_IMPORT_TABLE_PROCESSES,
-				[
+            // изменяет статус шортимпорта
+            $wpdb->update(
+                SHINA_IMPORT_TABLE_PROCESSES,
+                [
                     'status'    => $row_count > $row_current ? 'started' : 'imported',
                     'msg'       =>  $row_count > $row_current ? $this->messages['started'] : $this->messages['imported']
                 ],
                 ['ID' => $this->ID, 'process_name' => $this->process_name]
-			);
+            );
             $process_status = $row_count > $row_current ? 'started' : 'imported';
-		}
+        }
 
-		if ($process_status == 'imported') {
-			// изменяет статус шортимпорта
+        if ($process_status == 'imported') {
+            // изменяет статус шортимпорта
             $query = "SELECT *
                 FROM $this->table_name
                 WHERE product_id != 0";
@@ -235,18 +231,18 @@ class Shina_Import_Cron_Feed {
                 }
             }
 
-			$wpdb->update(
-				SHINA_IMPORT_TABLE_PROCESSES,
-				[
+            $wpdb->update(
+                SHINA_IMPORT_TABLE_PROCESSES,
+                [
                     'status'    => $result_feeds ? 'finished' : 'error',
                     'msg'       => $result_feeds ? $this->messages['finished'] : 'Файлы feed не обновлены, ошибка создания xml файлов',
                 ],
                 ['ID' => $this->ID, 'process_name' => $this->process_name]
-			);
-		}
+            );
+        }
 
-		return $record;
-	}
+        return $record;
+    }
 
     private function get_product_id_by_sku( $sku ) {
         global $wpdb;
@@ -264,7 +260,7 @@ class Shina_Import_Cron_Feed {
     private function get_table_record ($ID) {
         global $wpdb;
 
-		return $wpdb->get_row( "SELECT * FROM " . SHINA_IMPORT_TABLE_PROCESSES . " WHERE ID = $ID", ARRAY_A );
+        return $wpdb->get_row( "SELECT * FROM " . SHINA_IMPORT_TABLE_PROCESSES . " WHERE ID = $ID", ARRAY_A );
     }
 
     /**
